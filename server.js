@@ -35,6 +35,17 @@ user.save();
 const port = process.env.PORT || 8080;
 const app = express();
 
+const authenticateUser = async ( req, res, next) => {
+  const user = await User.findOne({accessToken: req.header('Authorization')});
+  if (user) {
+    req.user = user;
+//The next says we can continue with the API request that the user's trying to do
+    next();
+  } else {
+    res.status(401).json({loggedOut: true});
+  }
+}
+
 // Add middlewares to enable cors and json body parsing
 app.use(cors());
 app.use(bodyParser.json());
@@ -42,6 +53,12 @@ app.use(bodyParser.json());
 // Start defining your routes here
 app.get('/', (req, res) => {
   res.send('Hello world');
+});
+
+app.post('/tweets', authenticateUser);
+app.post('/tweets', async (req, res) => {
+// This will only happen if the next() function is called from the middleware!
+// now we can access the req.user object from the middleware
 });
 
 
